@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function () {
+  "use strict";
+  var PARENT = window.parent;
+  function send(type, data) {
+    var msg = { isStreamlitMessage: true, type: type };
+    if (data) { for (var k in data) { msg[k] = data[k]; } }
+    PARENT.postMessage(msg, "*");
+  }
+  var Streamlit = {
+    setComponentReady: function () {
+      send("streamlit:componentReady", { apiVersion: 1 });
+    },
+    setFrameHeight: function (h) {
+      send("streamlit:setFrameHeight", { height: h });
+    },
+    setComponentValue: function (v) {
+      send("streamlit:setComponentValue", { value: v, dataType: "json" });
+    }
+  };
+
+  var root = document.getElementById("root");
+  var lastHeight = 0;
+  var seq = 0;
+
+  function autoHeight() {
+    var h = root.scrollHeight;
+    if (h && h !== lastHeight) {
+      lastHeight = h;
+      Streamlit.setFrameHeight(h + 2);
+    }
+  }
+
+  window.addEventListener("message", function (ev) {
+    var d = ev.data;
+    if (!d || d.type !== "streamlit:render") { return; }
+    var args = d.args || {};
+    root.innerHTML = args.html || "";
+    if (args.full === false) {
+      lastHeight = 0;
+      Streamlit.setFrameHeight(420);
+    } else {
+      autoHeight();
+      setTimeout(autoHeight, 60);
+      setTimeout(autoHeight, 300);
+      setTimeout(autoHeight, 800);
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest("a[data-pk]") : null;
+    if (a) {
+      e.preventDefault();
+      seq += 1;
+      Streamlit.setComponentValue(a.getAttribute("data-pk") + "#" + seq);
+    }
+  });
+
+  Streamlit.setComponentReady();
+})();
+</script>
+</body>
+</html>

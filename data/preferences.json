@@ -1,0 +1,12 @@
+{
+  "stat_mode": "100",
+  "strategy": "冷热温混合",
+  "hot_count": 1,
+  "warm_count": 2,
+  "cold_count": 2,
+  "odd": "不限制",
+  "zone1": "不限制",
+  "zone2": "不限制",
+  "zone3": "不限制",
+  "groups": 1
+}
